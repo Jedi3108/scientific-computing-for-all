@@ -6,23 +6,6 @@
 // -DUSE_CUDA, a matrix-free 5-point Laplacian kernel is used for the
 // homogeneous-Dirichlet path (float). All boundary constants (beta terms)
 // are added to RHS/sources; the operator itself is strictly LINEAR.
-//
-// Build (CPU only):
-//   g++ -O3 -std=c++17 scfa_stage1.cpp -o scfa_stage1
-//
-// Build (GPU accel for Laplacian matvec on homog Dirichlet, float):
-//   nvcc -O3 -std=c++17 -DUSE_CUDA scfa_stage1.cpp -o scfa_stage1
-//
-// Run:
-//   ./scfa_stage1
-//
-// Notes:
-// - We keep the CUDA path minimal: a RawKernel-equivalent for laplace5.
-//   CG and time-stepping are orchestrated on host, calling the device
-//   matvec when available.
-// - Mask support mirrors the Python patch: outside-mask rows behave like
-//   identity; mask-edge constants are added to RHS/source.
-// - For brevity, plotting is omitted; timings and basic info are printed.
 
 #include <algorithm>
 #include <array>
@@ -107,7 +90,7 @@ inline bool is_homog_dirichlet(const Boundary& bc) {
   return side_ok(bc.left) && side_ok(bc.right) && side_ok(bc.bottom) && side_ok(bc.top);
 }
 
-// Build RHS constants from wall betas, in units of Y = 4u - neighbors (i.e., -(h^2 ∇² u))
+// Build RHS constants from wall betas, in units of Y = 4u - neighbors
 inline std::vector<double> boundary_constant_vector(const Grid2D& g, const Boundary& bc) {
   int Ny = g.Ny, Nx = g.Nx; 
   double hx = g.hx(), hy = g.hy();
