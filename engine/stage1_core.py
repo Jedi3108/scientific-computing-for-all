@@ -312,7 +312,7 @@ class Diffusion2D:
         """
         u = to_backend(u)
         h2 = self.h * self.h
-        gamma = (dt * self.alpha) / h2  # scales A@v (A returns -(h^2 ∇² v))
+        gamma = (dt * self.alpha) / h2  # scales A@v 
 
         # Right-hand side in field units
         rhs = u.ravel() + dt * self.bc_src.ravel()
@@ -321,7 +321,7 @@ class Diffusion2D:
 
         n = self.g.Nx * self.g.Ny
 
-        # Linear operator: M(v) = v + gamma * (A@v)
+        # Linear operator
         if gpu and cxl is not None:
             M = cxl.LinearOperator(
                 (n, n),
@@ -381,8 +381,6 @@ class Diffusion2D:
 
 # ------------------------------
 # Wave equation (leapfrog)
-# u_tt = c^2 ∇² u + s
-# Add c^2 * dt^2 * bc_src each step (bc_src is ∇²-units)
 # ------------------------------
 class Wave2D:
     def __init__(self, grid: Grid2D, bc: Boundary, c=1.0, dtype="float32"):
@@ -520,7 +518,7 @@ def run_interactive():
             xp.cuda.Stream.null.synchronize()
         t1 = time.perf_counter()
 
-        # If BCs are homogeneous Dirichlet (β=0), we can compare to exact
+        # If BCs are homogeneous Dirichlet, we can compare to exact
         if _is_homog_dirichlet(bc):
             h = g.hx
             y = xp.arange(1, g.Ny + 1, dtype=u.dtype) * h
@@ -604,7 +602,6 @@ def run_interactive():
         print(f"Using dt={dt:.3e} (CFL <= {wave.dt_cfl:.3e})")
 
         # Start-up step for leapfrog (zero initial velocity):
-        # u_{-1} = u_0 + 0.5 * c^2 * dt^2 * ∇² u_0
         lap_u0 = wave.lap(u0)
         u_prev = u0 + 0.5 * (c_speed ** 2) * (dt ** 2) * lap_u0
         u_curr = u0.copy()
